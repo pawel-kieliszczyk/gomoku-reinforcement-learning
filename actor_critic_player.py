@@ -39,7 +39,9 @@ class ActorCriticPlayer(object):
         # next_state = StateBuilder().build(board, self.value)
 
         reward = -1.0
-        if board.get_winner_value() == self.value:
+        if board.get_winner_value() == 0.0:
+            reward = 0.0
+        elif board.get_winner_value() == self.value:
             reward = 1.0
 
         # Update policy estimator

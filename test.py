@@ -23,12 +23,22 @@ game_controller = GameController(player1, player2)
 with tf.Session() as sess:
     sess.run(tf.global_variables_initializer())
 
+    # summary = tf.summary.merge_all()
     tensorflow_writer = tf.summary.FileWriter("/tmp/gomoku/0")
     tensorflow_writer.add_graph(sess.graph)
 
     for i in itertools.count():
     # for i in range(1):
+        player1_starts = False
+        if i % 2 == 0:
+            player1_starts = True
+
         print_board = (i % 10 == 0)
         if print_board:
             print("Playing game", i)
-        game_controller.play_game(sess, print_board=print_board)
+
+        game_controller.play_game(sess, player_one_starts=player1_starts, print_board=print_board)
+
+        # if i % 100 == 0:
+        #     s = sess.run(summary)
+        #     tensorflow_writer.add_summary(s, i)
