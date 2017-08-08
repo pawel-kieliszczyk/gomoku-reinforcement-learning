@@ -14,6 +14,8 @@ class GameController(object):
         else:
             self._play_game_if_player_two_starts(session, board, print_board)
 
+        return board.get_winner_value()
+
     def _play_game_if_player_one_starts(self, session, board, print_board):
         self.player1.initialize_state(board)
         x, y = self.player1.predict_move(session)
