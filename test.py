@@ -20,7 +20,7 @@ player2 = ActorCriticPlayer(-1.0, "Policy_Estimator_White", "Value_Estimator_Whi
 
 game_controller = GameController(player1, player2)
 
-write_summary_every = 100
+write_summary_every = 250
 print_wins_and_draws_every = 10
 
 with tf.Session() as sess:
@@ -34,7 +34,7 @@ with tf.Session() as sess:
     white_wins = 0
     black_wins = 0
     # for i in itertools.count():
-    for i in range(11):
+    for i in range(5001):
         player1_starts = False
         if i % 2 == 0:
             player1_starts = True

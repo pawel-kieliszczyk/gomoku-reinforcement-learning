@@ -8,8 +8,8 @@ class ValueEstimator(object):
 
     def _build_model(self, name):
         with tf.name_scope(name):
-            self.state = tf.placeholder(tf.float32, [1, 15, 15, 3], name="state")
-            self.target_value = tf.placeholder(tf.float32, [1, 1], name="target_value")
+            self.state = tf.placeholder(tf.float32, [None, 15, 15, 3], name="state")
+            self.target_value = tf.placeholder(tf.float32, [None, 1], name="target_value")
 
             with tf.name_scope("value"):
                 self.conv_W1 = tf.Variable(tf.truncated_normal([5, 5, 3, 128], stddev=0.1))
@@ -50,13 +50,12 @@ class ValueEstimator(object):
                 tf.summary.histogram("conv_b5", self.conv_b5)
 
             with tf.name_scope("loss"):
-                self.loss = tf.squared_difference(self.value, self.target_value)
+                self.loss = tf.reduce_mean(tf.squared_difference(self.value, self.target_value))
 
                 # tf.summary.scalar("loss", self.loss)
 
             with tf.name_scope("train"):
                 self.train_op = tf.train.AdamOptimizer(learning_rate=0.001).minimize(self.loss)
-                # self.train_op = tf.train.AdamOptimizer(learning_rate=0.0001).minimize(self.loss)
 
     def td_error(self, session, state, reward, next_state):
         value_for_state = session.run(self.value, feed_dict={self.state: [state]})[0][0]
@@ -73,6 +72,3 @@ class ValueEstimator(object):
             target_value += self.discount_factor * value_for_next_state
 
         session.run(self.train_op, feed_dict={self.state: [state], self.target_value: [[target_value]]})
-
-    def update_done(self, session, state, reward):
-        session.run(self.train_op, feed_dict={self.state: [state], self.target_value: [[reward]]})

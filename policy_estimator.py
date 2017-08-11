@@ -7,9 +7,9 @@ class PolicyEstimator(object):
 
     def _build_model(self, name):
         with tf.name_scope(name):
-            self.state = tf.placeholder(tf.float32, [1, 15, 15, 3], name="state")
-            self.action = tf.placeholder(tf.int32, [1], name="action")
-            self.advantage = tf.placeholder(tf.float32, [1], name="advantage")
+            self.state = tf.placeholder(tf.float32, [None, 15, 15, 3], name="state")
+            self.action = tf.placeholder(tf.int32, [None, 2], name="action")
+            self.advantage = tf.placeholder(tf.float32, [None], name="advantage")
 
             with tf.name_scope("predictions"):
                 self.conv_W1 = tf.Variable(tf.truncated_normal([7, 7, 3, 128], stddev=0.1))
@@ -50,16 +50,15 @@ class PolicyEstimator(object):
                 tf.summary.histogram("conv_b5", self.conv_b5)
 
             with tf.name_scope("loss"):
-                self.picked_action_prob = tf.gather(self.action_probs[0], self.action)
-                self.loss = -tf.log(self.picked_action_prob) * self.advantage
+                self.picked_action_prob = tf.gather_nd(self.action_probs, self.action)
+                self.loss = tf.reduce_mean(-tf.log(self.picked_action_prob) * self.advantage)
 
             with tf.name_scope("train"):
-                self.train_op = tf.train.AdamOptimizer(learning_rate=0.0000001).minimize(self.loss)
-                # self.train_op = tf.train.AdamOptimizer(learning_rate=0.0001).minimize(self.loss)
+                self.train_op = tf.train.AdamOptimizer(learning_rate=0.00000001).minimize(self.loss)
 
     def predict(self, session, state):
         return session.run(self.action_probs, feed_dict={self.state: [state]})[0]
 
     def update(self, session, state, advantage, action):
-        feed_dict = {self.state: [state], self.advantage: [advantage], self.action: [action]}
+        feed_dict = {self.state: [state], self.advantage: [advantage], self.action: [[0, action]]}
         session.run(self.train_op, feed_dict)
